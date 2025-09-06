@@ -2,6 +2,7 @@ package org.bunnys.handler;
 
 import net.dv8tion.jda.api.sharding.ShardManager;
 import org.bunnys.handler.commands.CommandRegistry;
+import org.bunnys.handler.database.providers.MongoProvider;
 import org.bunnys.handler.lifecycle.*;
 import org.bunnys.handler.utils.handler.logging.Logger;
 
@@ -12,6 +13,9 @@ public class BunnyNexus {
 
     // Registries & Lifecycle Handlers
     private final CommandRegistry commandRegistry = new CommandRegistry();
+
+    // Database
+    private MongoProvider mongoProvider;
 
     public BunnyNexus(Config config) {
         if (config == null)
@@ -35,8 +39,10 @@ public class BunnyNexus {
         EventLifecycle.loadAndRegisterEvents(config, this, shardManager);
         CommandLifecycle.loadAndRegisterCommands(config, this, commandRegistry);
 
-        if (this.config.connectToDatabase())
+        if (this.config.connectToDatabase()) {
             DatabaseLifecycle.initialize(this.config).join();
+            this.mongoProvider = (MongoProvider) DatabaseLifecycle.getMongoProvider();
+        }
     }
 
     /* -------------------- Public API -------------------- */
@@ -49,6 +55,20 @@ public class BunnyNexus {
 
     public void reconnect(String newToken) {
         ShardManagerLifecycle.reconnect(this, newToken);
+    }
+
+    public void reconnectDatabase() {
+        if (!this.config.connectToDatabase()) {
+            Logger.warning("Database connection is disabled. Skipping reconnection.");
+            return;
+        }
+
+        Logger.info("Reconnecting to database...");
+
+        DatabaseLifecycle.shutdown().join();
+
+        DatabaseLifecycle.initialize(this.config).join();
+        this.mongoProvider = (MongoProvider) DatabaseLifecycle.getMongoProvider();
     }
 
     public void shutdown() {
@@ -66,6 +86,10 @@ public class BunnyNexus {
 
     public CommandRegistry commandRegistry() {
         return commandRegistry;
+    }
+
+    public MongoProvider getMongoProvider() {
+        return mongoProvider;
     }
 
     /* -------------------- Internal use -------------------- */
