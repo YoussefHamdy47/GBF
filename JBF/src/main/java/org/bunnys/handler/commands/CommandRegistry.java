@@ -1,7 +1,9 @@
 package org.bunnys.handler.commands;
 
 import org.bunnys.handler.commands.message.MessageCommandConfig;
+import org.bunnys.handler.commands.slash.ContextCommandConfig;
 import org.bunnys.handler.commands.slash.SlashCommandConfig;
+import org.bunnys.handler.spi.ContextCommand;
 import org.bunnys.handler.spi.MessageCommand;
 import org.bunnys.handler.spi.SlashCommand;
 import org.bunnys.handler.utils.handler.logging.Logger;
@@ -27,6 +29,7 @@ public class CommandRegistry {
     private final ConcurrentHashMap<String, List<CommandEntry>> merged = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, MessageCommand> messageCommands = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, SlashCommand> slashCommands = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, ContextCommand> contextCommands = new ConcurrentHashMap<>();
 
     /**
      * Normalizes a command name or alias to its canonical form
@@ -134,6 +137,26 @@ public class CommandRegistry {
         Logger.debug(() -> "[CommandRegistry] Registered Slash Command: " + cfg.name());
     }
 
+    public void registerContextCommand(ContextCommand cmd, ContextCommandConfig cfg) {
+        Objects.requireNonNull(cmd, "cmd");
+        Objects.requireNonNull(cfg, "cfg");
+
+        String canonicalName = canonical(cfg.name());
+
+        if (canonicalName.isBlank())
+            throw new IllegalArgumentException("Context Command name cannot be blank");
+
+        synchronized (this) {
+            if (this.contextCommands.containsKey(canonicalName)) {
+                String msg = "Duplicate context command detected: " + canonicalName;
+                Logger.error("[CommandRegistry] " + msg);
+                throw new IllegalStateException(msg);
+            }
+            this.contextCommands.putIfAbsent(canonicalName, cmd);
+            addToMerged(canonicalName, CommandEntry.forContext(cmd, cfg));
+        }
+    }
+
     /**
      * Finds a command by its name or alias across all command types
      *
@@ -178,6 +201,15 @@ public class CommandRegistry {
         return cmd != null ? CommandEntry.forSlash(cmd, cmd.initAndGetConfig()) : null;
     }
 
+    public CommandEntry findContext(String token) {
+        if (token == null || token.isBlank())
+            return null;
+
+        String key = canonical(token);
+        ContextCommand cmd = this.contextCommands.get(key);
+        return cmd != null ? CommandEntry.forContext(cmd, cmd.initAndGetConfig()) : null;
+    }
+
     /**
      * Gets an unmodifiable view of the registered message commands
      *
@@ -194,6 +226,10 @@ public class CommandRegistry {
      */
     public Map<String, SlashCommand> slashView() {
         return Collections.unmodifiableMap(this.slashCommands);
+    }
+
+    public Map<String, ContextCommand> contextView() {
+        return Collections.unmodifiableMap(this.contextCommands);
     }
 
     /**
@@ -228,10 +264,14 @@ public class CommandRegistry {
      * and slash command types It provides a single point of access to the command
      * instance and its metadata
      */
-    public record CommandEntry(CommandType type, MessageCommand messageCommand, MessageCommandConfig messageMetaData,
-            SlashCommand slashCommand, SlashCommandConfig slashMetaData) {
+    public record CommandEntry(
+            CommandType type,
+            MessageCommand messageCommand, MessageCommandConfig messageMetaData,
+            SlashCommand slashCommand, SlashCommandConfig slashMetaData,
+            ContextCommand contextCommand, ContextCommandConfig contextMetaData
+    ) {
         public enum CommandType {
-            MESSAGE, SLASH
+            MESSAGE, SLASH, CONTEXT
         }
 
         /**
@@ -242,7 +282,7 @@ public class CommandRegistry {
          * @return A new {@link CommandEntry}
          */
         public static CommandEntry forMessage(MessageCommand cmd, MessageCommandConfig meta) {
-            return new CommandEntry(CommandType.MESSAGE, cmd, meta, null, null);
+            return new CommandEntry(CommandType.MESSAGE, cmd, meta, null, null, null, null);
         }
 
         /**
@@ -253,7 +293,11 @@ public class CommandRegistry {
          * @return A new {@link CommandEntry}
          */
         public static CommandEntry forSlash(SlashCommand cmd, SlashCommandConfig meta) {
-            return new CommandEntry(CommandType.SLASH, null, null, cmd, meta);
+            return new CommandEntry(CommandType.SLASH, null, null, cmd, meta, null, null);
+        }
+
+        public static CommandEntry forContext(ContextCommand cmd, ContextCommandConfig meta) {
+            return new CommandEntry(CommandType.CONTEXT, null, null, null, null, cmd, meta);
         }
     }
 }

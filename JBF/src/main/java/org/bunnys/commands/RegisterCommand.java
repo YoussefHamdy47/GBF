@@ -2,7 +2,7 @@ package org.bunnys.commands;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.bunnys.database.RepositoryFactory;
-import org.bunnys.database.entities.User;
+import org.bunnys.database.models.User;
 import org.bunnys.handler.BunnyNexus;
 import org.bunnys.handler.commands.slash.SlashCommandConfig;
 import org.bunnys.handler.database.providers.MongoProvider;

@@ -3,11 +3,15 @@ package org.bunnys.handler.events.defaults;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.command.MessageContextInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.bunnys.handler.BunnyNexus;
 import org.bunnys.handler.commands.CommandRegistry;
+import org.bunnys.handler.commands.slash.ContextCommandConfig;
 import org.bunnys.handler.commands.slash.SlashCommandConfig;
+import org.bunnys.handler.spi.ContextCommand;
 import org.bunnys.handler.spi.Event;
 import org.bunnys.handler.spi.SlashCommand;
 import org.bunnys.handler.utils.commands.handlers.CommandVerification;
@@ -318,6 +322,75 @@ public final class InteractionCreate extends ListenerAdapter implements Event {
             // as they would disrupt the user experience
         }
     }
+
+    @Override
+    public void onUserContextInteraction(@NotNull UserContextInteractionEvent event) {
+        if (isShutdown.get()) return;
+
+        final String commandName = event.getName();
+        final String userId = event.getUser().getId();
+        final String traceId = generateTraceId();
+
+        try {
+            CommandRegistry.CommandEntry entry = client.commandRegistry().findContext(commandName);
+
+            if (entry == null || entry.contextCommand() == null) {
+                Logger.warning("[" + EVENT_NAME + "] User context command '" + commandName + "' not found (traceId=" + traceId + ")");
+                return;
+            }
+
+            final ContextCommand command = entry.contextCommand();
+            final ContextCommandConfig config = command.initAndGetConfig();
+
+            CompletableFuture
+                    .runAsync(() -> command.onUserCommand(client, event), commandExecutor)
+                    .orTimeout(COMMAND_TIMEOUT.toSeconds(), TimeUnit.SECONDS)
+                    .whenComplete((res, ex) -> {
+                        if (ex != null) {
+                            Logger.error("[" + EVENT_NAME + "] User context command '" + commandName + "' failed (traceId=" + traceId + ")", unwrapCompletionException(ex));
+                        } else {
+                            Logger.info("[" + EVENT_NAME + "] User context command '" + commandName + "' executed (traceId=" + traceId + ")");
+                        }
+                    });
+        } catch (Exception e) {
+            Logger.error("[" + EVENT_NAME + "] Unexpected error in user context command '" + commandName + "' (traceId=" + traceId + ")", e);
+        }
+    }
+
+    @Override
+    public void onMessageContextInteraction(@NotNull MessageContextInteractionEvent event) {
+        if (isShutdown.get()) return;
+
+        final String commandName = event.getName();
+        final String userId = event.getUser().getId();
+        final String traceId = generateTraceId();
+
+        try {
+            CommandRegistry.CommandEntry entry = client.commandRegistry().findContext(commandName);
+
+            if (entry == null || entry.contextCommand() == null) {
+                Logger.warning("[" + EVENT_NAME + "] Message context command '" + commandName + "' not found (traceId=" + traceId + ")");
+                return;
+            }
+
+            final ContextCommand command = entry.contextCommand();
+            final ContextCommandConfig config = command.initAndGetConfig();
+
+            CompletableFuture
+                    .runAsync(() -> command.onMessageCommand(client, event), commandExecutor)
+                    .orTimeout(COMMAND_TIMEOUT.toSeconds(), TimeUnit.SECONDS)
+                    .whenComplete((res, ex) -> {
+                        if (ex != null) {
+                            Logger.error("[" + EVENT_NAME + "] Message context command '" + commandName + "' failed (traceId=" + traceId + ")", unwrapCompletionException(ex));
+                        } else {
+                            Logger.info("[" + EVENT_NAME + "] Message context command '" + commandName + "' executed (traceId=" + traceId + ")");
+                        }
+                    });
+        } catch (Exception e) {
+            Logger.error("[" + EVENT_NAME + "] Unexpected error in message context command '" + commandName + "' (traceId=" + traceId + ")", e);
+        }
+    }
+
 
     /**
      * Executes a slash command asynchronously with timeout and completion handling.

@@ -1,7 +1,7 @@
 package org.bunnys.database;
 
 import com.mongodb.client.MongoDatabase;
-import org.bunnys.database.entities.User;
+import org.bunnys.database.models.User;
 import org.bunnys.database.repositories.MongoRepository;
 
 public class RepositoryFactory {

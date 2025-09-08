@@ -2,15 +2,11 @@ package org.bunnys.commands;
 
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
 import org.bunnys.handler.BunnyNexus;
 import org.bunnys.handler.spi.SlashCommand;
 import org.bunnys.handler.commands.slash.SlashCommandConfig;
 
 public class PingSlash extends SlashCommand {
-
     @Override
     protected void commandOptions(SlashCommandConfig.Builder options) {
         options.name("ping")

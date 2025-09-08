@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -80,9 +81,33 @@ public class ClientReady extends ListenerAdapter implements Event {
                 .filter(Objects::nonNull)
                 .toList();
 
+        // --- Context Commands (User + Message) ---
+        List<CommandData> globalContext = registry.contextView().values().stream()
+                .map(cmd -> {
+                    var cfg = cmd.initAndGetConfig();
+                    if (cfg.testOnly()) return null;
+                    return (cfg.type() == Command.Type.USER)
+                            ? Commands.user(cfg.name())
+                            : Commands.message(cfg.name());
+                })
+                .filter(Objects::nonNull)
+                .toList();
+
+        List<CommandData> testOnlyContext = registry.contextView().values().stream()
+                .map(cmd -> {
+                    var cfg = cmd.initAndGetConfig();
+                    if (!cfg.testOnly()) return null;
+                    return (cfg.type() == Command.Type.USER)
+                            ? Commands.user(cfg.name())
+                            : Commands.message(cfg.name());
+                })
+                .filter(Objects::nonNull)
+                .toList();
+
+
         for (JDA jda : shardManager.getShards()) {
             // Replace global commands
-            jda.updateCommands().addCommands(globalCommands).queue();
+            jda.updateCommands().addCommands(globalCommands).addCommands(globalContext).queue();
 
             // Replace per-guild commands
             for (String guildId : testServers) {
@@ -92,8 +117,10 @@ public class ClientReady extends ListenerAdapter implements Event {
                     List<CommandData> merged = new ArrayList<>();
                     merged.addAll(globalCommands);
                     merged.addAll(testOnlyCommands);
+                    merged.addAll(globalContext);
+                    merged.addAll(testOnlyContext);
 
-                    guild.updateCommands().addCommands(testOnlyCommands).queue();
+                    guild.updateCommands().addCommands(testOnlyCommands).addCommands(testOnlyContext).queue();
                 }
             }
         }

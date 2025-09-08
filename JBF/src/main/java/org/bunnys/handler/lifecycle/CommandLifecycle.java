@@ -5,7 +5,9 @@ import org.bunnys.handler.BunnyNexus;
 import org.bunnys.handler.commands.CommandLoader;
 import org.bunnys.handler.commands.CommandRegistry;
 import org.bunnys.handler.commands.message.MessageCommandConfig;
+import org.bunnys.handler.commands.slash.ContextCommandConfig;
 import org.bunnys.handler.commands.slash.SlashCommandConfig;
+import org.bunnys.handler.spi.ContextCommand;
 import org.bunnys.handler.spi.MessageCommand;
 import org.bunnys.handler.spi.SlashCommand;
 import org.bunnys.handler.utils.handler.logging.Logger;
@@ -25,7 +27,6 @@ import java.util.List;
  * </p>
  *
  * @author Bunny
- * @version 2.0
  */
 public final class CommandLifecycle {
 
@@ -101,5 +102,26 @@ public final class CommandLifecycle {
         int finalFailedSlash = failedSlash;
         Logger.debug(() -> String.format("[BunnyNexus] Loaded %d slash command(s), %d failed to register",
                 finalSuccessSlash, finalFailedSlash));
+
+        // --- Load context commands (User & Message) ---
+        List<ContextCommand> contextCommands = new ArrayList<>(loader.loadContextCommands());
+        int successContext = 0, failedContext = 0;
+
+        for (ContextCommand cmd : contextCommands) {
+            try {
+                ContextCommandConfig cfg = cmd.initAndGetConfig();
+                registry.registerContextCommand(cmd, cfg);
+                successContext++;
+            } catch (Throwable t) {
+                failedContext++;
+                Logger.error("[BunnyNexus] Failed to register context command: " + cmd.getClass().getName(), t);
+            }
+        }
+        int finalSuccessContext = successContext;
+        int finalFailedContext = failedContext;
+        Logger.debug(() -> String.format(
+                "[BunnyNexus] Loaded %d context command(s), %d failed to register",
+                finalSuccessContext, finalFailedContext));
+
     }
 }
