@@ -85,7 +85,8 @@ public class ClientReady extends ListenerAdapter implements Event {
         List<CommandData> globalContext = registry.contextView().values().stream()
                 .map(cmd -> {
                     var cfg = cmd.initAndGetConfig();
-                    if (cfg.testOnly()) return null;
+                    if (cfg.testOnly())
+                        return null;
                     return (cfg.type() == Command.Type.USER)
                             ? Commands.user(cfg.name())
                             : Commands.message(cfg.name());
@@ -96,14 +97,14 @@ public class ClientReady extends ListenerAdapter implements Event {
         List<CommandData> testOnlyContext = registry.contextView().values().stream()
                 .map(cmd -> {
                     var cfg = cmd.initAndGetConfig();
-                    if (!cfg.testOnly()) return null;
+                    if (!cfg.testOnly())
+                        return null;
                     return (cfg.type() == Command.Type.USER)
                             ? Commands.user(cfg.name())
                             : Commands.message(cfg.name());
                 })
                 .filter(Objects::nonNull)
                 .toList();
-
 
         for (JDA jda : shardManager.getShards()) {
             // Replace global commands

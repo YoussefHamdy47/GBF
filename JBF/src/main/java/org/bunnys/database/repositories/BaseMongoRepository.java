@@ -96,7 +96,8 @@ public abstract class BaseMongoRepository<T extends Entity<String>> implements R
     public CompletableFuture<Optional<T>> findById(String id) {
         return runAsync(() -> {
             Document doc = collection.find(eq("_id", id)).first(); // no ObjectId conversion
-            if (doc == null) return Optional.empty();
+            if (doc == null)
+                return Optional.empty();
             T entity = createEntity();
             entity.fromDocument(doc);
             return Optional.of(entity);

@@ -7,7 +7,8 @@ public class User extends BaseEntity {
     private String userId;
     private String username;
 
-    public User() {}
+    public User() {
+    }
 
     public User(String userId, String username) {
         this.userId = userId;
@@ -39,6 +40,11 @@ public class User extends BaseEntity {
     }
 
     // Getters
-    public String getUserId() { return userId; }
-    public String getUsername() { return username; }
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
 }

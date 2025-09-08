@@ -17,18 +17,22 @@ public abstract class ContextCommand {
     protected abstract void commandOptions(ContextCommandConfig.Builder options);
 
     /** Execution logic for User commands */
-    public void onUserCommand(BunnyNexus client, UserContextInteractionEvent event) {}
+    public void onUserCommand(BunnyNexus client, UserContextInteractionEvent event) {
+    }
 
     /** Execution logic for Message commands */
-    public void onMessageCommand(BunnyNexus client, MessageContextInteractionEvent event) {}
+    public void onMessageCommand(BunnyNexus client, MessageContextInteractionEvent event) {
+    }
 
     /** Lazy initialization of the config */
     public final ContextCommandConfig initAndGetConfig() {
         ContextCommandConfig local = this.config;
-        if (local != null) return local;
+        if (local != null)
+            return local;
 
         synchronized (this) {
-            if (this.config != null) return this.config;
+            if (this.config != null)
+                return this.config;
 
             ContextCommandConfig.Builder builder = new ContextCommandConfig.Builder();
             this.commandOptions(builder);
