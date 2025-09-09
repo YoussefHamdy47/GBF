@@ -1,0 +1,34 @@
+{
+  "name": "gbf",
+  "version": "3.0.0",
+  "description": "GBF Bot updated to use GBF Handler v5 and Discord.JS v14",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Eng-Bunnys/Discord-Bot-Commands-and-Handler.git"
+  },
+  "author": ".Bunnys",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Eng-Bunnys/Discord-Bot-Commands-and-Handler/issues"
+  },
+  "homepage": "https://github.com/Eng-Bunnys/Discord-Bot-Commands-and-Handler#readme",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "chalk": "^4.1.0",
+    "discord.js": "^14.21.0",
+    "dotenv": "^16.3.1",
+    "figlet": "^1.7.0",
+    "mongoose": "^8.5.1",
+    "nekos.life": "^3.0.0",
+    "nodemon": "^3.1.9",
+    "ts-node-dev": "^2.0.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.4"
+  }
+}
