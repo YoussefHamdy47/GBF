@@ -4,11 +4,15 @@ import org.bunnys.handler.BunnyNexus;
 import org.bunnys.handler.utils.handler.logging.Logger;
 
 /**
- * A static utility class managing the lifecycle of the JDA {@link net.dv8tion.jda.api.sharding.ShardManager}.
+ * A static utility class managing the lifecycle of the JDA
+ * {@link net.dv8tion.jda.api.sharding.ShardManager}.
  * <p>
- * This class provides a centralized, robust API for key lifecycle operations, including graceful
- * shutdown and re-initialization of the shard manager. Its methods ensure that the transition
- * between states is handled safely, preventing resource leaks and ensuring a consistent state.
+ * This class provides a centralized, robust API for key lifecycle operations,
+ * including graceful
+ * shutdown and re-initialization of the shard manager. Its methods ensure that
+ * the transition
+ * between states is handled safely, preventing resource leaks and ensuring a
+ * consistent state.
  * </p>
  *
  * @author Bunny
@@ -16,22 +20,27 @@ import org.bunnys.handler.utils.handler.logging.Logger;
 public class ShardManagerLifecycle {
 
     /**
-     * Gracefully shuts down the existing {@link net.dv8tion.jda.api.sharding.ShardManager} and
+     * Gracefully shuts down the existing
+     * {@link net.dv8tion.jda.api.sharding.ShardManager} and
      * reconnects with a new token
      * <p>
-     * This method orchestrates the full sequence required to replace a bot's connection token
+     * This method orchestrates the full sequence required to replace a bot's
+     * connection token
      * without a full application restart. The process involves:
      * <ol>
      * <li>Logging a warning to alert of the impending state change</li>
-     * <li>Initiating a graceful shutdown of the current shard manager via {@link #shutdown(BunnyNexus)}.</li>
+     * <li>Initiating a graceful shutdown of the current shard manager via
+     * {@link #shutdown(BunnyNexus)}.</li>
      * <li>Updating the bot's configuration with the new token</li>
-     * <li>Re-initializing a new shard manager using {@link ShardManagerInitializer#initShardManager(org.bunnys.handler.Config)}.</li>
+     * <li>Re-initializing a new shard manager using
+     * {@link ShardManagerInitializer#initShardManager(org.bunnys.handler.Config)}.</li>
      * <li>Re-registering all events with the new shard manager</li>
      * </ol>
      * This sequence ensures a seamless transition with minimal downtime
      * </p>
      *
-     * @param bunnyNexus The main bot client instance whose shard manager will be updated
+     * @param bunnyNexus The main bot client instance whose shard manager will be
+     *                   updated
      * @param newToken   The new bot token to use for reconnection
      */
     public static void reconnect(BunnyNexus bunnyNexus, String newToken) {
@@ -43,27 +52,63 @@ public class ShardManagerLifecycle {
     }
 
     /**
-     * Gracefully shuts down the current {@link net.dv8tion.jda.api.sharding.ShardManager}
+     * Gracefully shuts down the current
+     * {@link net.dv8tion.jda.api.sharding.ShardManager}
      * <p>
-     * This method attempts to perform a clean shutdown, allowing JDA to close all active gateway
-     * connections and release resources. It includes robust error handling to log any issues
-     * during the shutdown process, and it sets the shard manager reference to {@code null}
+     * This method attempts to perform a clean shutdown, allowing JDA to close all
+     * active gateway
+     * connections and release resources. It includes robust error handling to log
+     * any issues
+     * during the shutdown process, and it sets the shard manager reference to
+     * {@code null}
      * in a {@code finally} block to prevent dangling references
      * </p>
      *
-     * @param bunnyNexus The main bot client instance whose shard manager will be shut down
+     * @param bunnyNexus The main bot client instance whose shard manager will be
+     *                   shut down
      */
     public static void shutdown(BunnyNexus bunnyNexus) {
+        Logger.info("[BunnyNexus] Initiating shutdown...");
+
+        if (bunnyNexus.commandRegistry() != null) {
+            try {
+                int commandsCleared = bunnyNexus.commandRegistry().clearAllWithCount();
+                Logger.info("[CommandRegistry] Cleared " + commandsCleared + " command"
+                        + (commandsCleared == 1 ? "" : "s"));
+            } catch (Exception error) {
+                Logger.error("[BunnyNexus] Error while clearing command registry: "
+                        + error.getMessage(), error);
+            }
+        }
+
         if (bunnyNexus.getShardManager() != null) {
             try {
+                bunnyNexus.eventRegistry().clearAndReport();
+            } catch (Exception error) {
+                Logger.error("[BunnyNexus] Error while unregistering event listeners: "
+                        + error.getMessage(), error);
+            }
+
+            try {
                 bunnyNexus.getShardManager().shutdown();
-                Logger.info("ShardManager shutdown complete.");
-            } catch (Exception e) {
-                Logger.error("Error during ShardManager shutdown: " + e.getMessage(), e);
+                Logger.info("[BunnyNexus] ShardManager shutdown complete.");
+            } catch (Exception error) {
+                Logger.error("[BunnyNexus] Error while shutting down ShardManager: "
+                        + error.getMessage(), error);
             } finally {
                 bunnyNexus.setShardManager(null);
             }
         } else
-            Logger.debug(() -> "Shutdown requested but ShardManager was null.");
+            Logger.debug(() -> "[BunnyNexus] Shutdown requested but ShardManager was null.");
+
+        if (bunnyNexus.getMongoProvider() != null) {
+            try {
+                DatabaseLifecycle.shutdown().join();
+            } catch (Exception error) {
+                Logger.error("[BunnyNexus] Error during database shutdown: " + error.getMessage(), error);
+            }
+        }
+
+        Logger.info("[BunnyNexus] Offline");
     }
 }

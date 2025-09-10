@@ -55,6 +55,7 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @author Bunny
  */
+@SuppressWarnings("unused")
 public final class DatabaseLifecycle {
     /**
      * A thread-safe map to store initialized database providers, keyed by their
@@ -95,7 +96,7 @@ public final class DatabaseLifecycle {
      */
     public static CompletableFuture<Void> initialize(Config config) {
         if (!config.connectToDatabase()) {
-            Logger.info("Database connections disabled in configuration");
+            Logger.debug(() -> "Database connections disabled in configuration");
             return CompletableFuture.completedFuture(null);
         }
 
@@ -105,7 +106,7 @@ public final class DatabaseLifecycle {
             return CompletableFuture.completedFuture(null);
         }
 
-        Logger.info("Initializing database connection: " + dbConfig.type());
+        Logger.debug(() -> "Initializing database connection: " + dbConfig.type());
 
         return CompletableFuture.runAsync(() -> {
             try {
@@ -114,7 +115,7 @@ public final class DatabaseLifecycle {
 
                 provider.connect().join(); // Wait for connection
 
-                Logger.success("Database connection established: " + dbConfig.type());
+                Logger.debug(() -> "Database connection established: " + dbConfig.type());
             } catch (Exception e) {
                 Logger.error("Failed to initialize database: " + e.getMessage());
                 throw new RuntimeException("Database initialization failed", e);
@@ -143,11 +144,11 @@ public final class DatabaseLifecycle {
             return CompletableFuture.completedFuture(null);
         }
 
-        Logger.info("Shutting down database connections...");
+        Logger.info("[Database] Disconnecting...");
 
         CompletableFuture<?>[] shutdownFutures = providers.values().stream()
                 .map(provider -> provider.disconnect().exceptionally(throwable -> {
-                    Logger.warning("Error during database shutdown: " + throwable.getMessage());
+                    Logger.error("[Database] Error during shutdown: " + throwable.getMessage(), throwable);
                     return null;
                 }))
                 .toArray(CompletableFuture[]::new);
@@ -155,7 +156,7 @@ public final class DatabaseLifecycle {
         return CompletableFuture.allOf(shutdownFutures)
                 .thenRun(() -> {
                     providers.clear();
-                    Logger.success("All database connections closed");
+                    Logger.info("[Database] Disconnected");
                 });
     }
 

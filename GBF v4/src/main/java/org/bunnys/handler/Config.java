@@ -44,7 +44,7 @@ import java.util.Objects;
  * @see org.bunnys.handler.database.configs.MongoConfig
  * @see org.bunnys.handler.utils.handler.EnvLoader
  */
-@SuppressWarnings({"unused", "rawtypes"})
+@SuppressWarnings({ "unused", "rawtypes" })
 public class Config {
     /**
      * The version string of the bot, used for logging and identification.
@@ -300,10 +300,10 @@ public class Config {
         }
 
         if (this.debug)
-            Logger.info("No manual token provided, attempting to load from .env under \"TOKEN\"");
+            Logger.debug(() -> "No manual token provided, attempting to load from .env under \"TOKEN\"");
         String envToken = EnvLoader.get("TOKEN");
         if (envToken != null && !envToken.isBlank()) {
-            Logger.success("Loaded bot token from .env");
+            Logger.debug(() -> "Loaded bot token from .env");
             return envToken;
         }
 

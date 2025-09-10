@@ -14,8 +14,36 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * Manages the lifecycle of bot commands, including loading and registration
+ *
+ * <p>
+ * This utility class is responsible for discovering, initializing, and
+ * registering
+ * all command types (slash, message, and context commands) found within a
+ * specified
+ * package. It ensures that commands are properly prepared for use by the bot's
+ * {@link CommandRegistry}
+ * </p>
+ */
 public final class CommandLifecycle {
 
+    /**
+     * Loads and registers all commands from the configured package
+     *
+     * <p>
+     * This method orchestrates the entire command loading process. It uses a
+     * {@link CommandLoader} to find command classes and then delegates the
+     * registration of each command type to a private helper method. This
+     * method is a no-op if the commands package is not specified in the
+     * {@link Config}
+     * </p>
+     *
+     * @param config     The bot's configuration, containing the commands package
+     * @param bunnyNexus The central {@link BunnyNexus} client instance
+     * @param registry   The {@link CommandRegistry} where commands will be
+     *                   registered
+     */
     public static void loadAndRegisterCommands(Config config, BunnyNexus bunnyNexus, CommandRegistry registry) {
         if (config.commandsPackage() == null || config.commandsPackage().isBlank())
             return;
@@ -41,6 +69,30 @@ public final class CommandLifecycle {
                 registry::registerContextCommand);
     }
 
+    /**
+     * Generic helper method for registering a specific type of command
+     *
+     * <p>
+     * This method abstracts the command registration logic, allowing it to be
+     * reused for all command types. It handles the discovery of commands,
+     * extracts their configuration, and registers them with the provided
+     * {@link BiConsumer} while logging success and failure counts
+     * </p>
+     *
+     * @param typeName        The user-friendly name for the command type (e.g.,
+     *                        "slash")
+     * @param loader          A {@link Supplier} that provides a list of command
+     *                        instances
+     * @param configExtractor A {@link Function} to extract the configuration from a
+     *                        command instance
+     * @param registrator     A {@link BiConsumer} that performs the actual
+     *                        registration of the command
+     *                        and its configuration
+     * @param <T>             The type of the command class (e.g.,
+     *                        {@link SlashCommand})
+     * @param <C>             The type of the command's configuration (e.g.,
+     *                        {@link org.bunnys.handler.commands.slash.SlashCommandConfig})
+     */
     private static <T, C> void registerCommandType(
             String typeName,
             Supplier<List<T>> loader,
