@@ -105,11 +105,10 @@ public final class EventRegistry {
         final var shards = List.copyOf(shardManager.getShards());
         final boolean dbg = config.debug();
 
-        if (dbg) {
-            Logger.info("[EventRegistry] Registering " + size() + " event"
+        if (dbg)
+            Logger.debug(() -> "[EventRegistry] Registering " + size() + " event"
                     + (size() > 1 ? "s" : "") + " across " + shards.size() + " shard"
                     + (shards.size() > 1 ? "s" : "") + "...");
-        }
 
         for (Event event : snapshot()) {
             try {
@@ -117,7 +116,7 @@ public final class EventRegistry {
                     if (this.globalListeners.add(event.getClass().getName())) {
                         shardManager.addEventListener(listener);
                         if (dbg)
-                            Logger.info("[EventRegistry] Registered globally: " + event.getClass().getName());
+                            Logger.debug(() -> "[EventRegistry] Registered globally: " + event.getClass().getName());
                     }
                 } else {
                     for (var jda : shards) {
@@ -139,7 +138,27 @@ public final class EventRegistry {
         }
 
         if (dbg)
-            Logger.success("[EventRegistry] Registration complete");
+            Logger.debug(() -> "[EventRegistry] Registration complete");
         Logger.debug(() -> "[EventRegistry] Final event count: " + size());
+    }
+
+    /**
+     * Clears all the events, only use this during shutdown
+     * */
+    public void clear() {
+        this.events.clear();
+        this.globalListeners.clear();
+        Logger.info("[EventRegistry] Cleared all registered events.");
+    }
+
+    /**
+     * Clears all registered events and logs the number of events cleared.
+     * Use this during shutdown when you want transparency.
+     */
+    public void clearAndReport() {
+        int count = this.events.size();
+        this.events.clear();
+        this.globalListeners.clear();
+        Logger.info("[EventRegistry] Cleared " + count + " registered event" + (count == 1 ? "" : "s"));
     }
 }

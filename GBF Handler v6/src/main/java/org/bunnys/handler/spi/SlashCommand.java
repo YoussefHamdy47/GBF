@@ -19,7 +19,6 @@ import org.bunnys.handler.commands.slash.SlashCommandConfig;
  * </p>
  *
  * @author Bunny
- * @version 1.0
  */
 @SuppressWarnings("unused")
 public abstract class SlashCommand {
@@ -93,5 +92,6 @@ public abstract class SlashCommand {
         }
     }
 
-    public void onAutoComplete(BunnyNexus client, CommandAutoCompleteInteractionEvent event) {}
+    public void onAutoComplete(BunnyNexus client, CommandAutoCompleteInteractionEvent event) {
+    }
 }

@@ -7,6 +7,7 @@ import org.bunnys.handler.BunnyNexus;
 import org.bunnys.handler.spi.Event;
 import org.bunnys.handler.utils.handler.logging.Logger;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -26,10 +27,7 @@ import java.util.Objects;
  * @author Bunny
  * @version 4.0
  */
-public final class EventLoader {
-    private final String eventPackage;
-    private final BunnyNexus client;
-
+public record EventLoader(String eventPackage, BunnyNexus client) {
     /**
      * Constructs an {@code EventLoader}
      *
@@ -70,7 +68,7 @@ public final class EventLoader {
 
             var loaded = scanResult.getClassesImplementing(Event.class.getName())
                     .stream() // sequential: predictable, cheaper
-                    .sorted(java.util.Comparator.comparing(ClassInfo::getSimpleName))
+                    .sorted(Comparator.comparing(ClassInfo::getSimpleName))
                     .map(ci -> {
                         try {
                             Class<?> clazz = ci.loadClass();
@@ -84,7 +82,7 @@ public final class EventLoader {
                             return null;
                         }
                     })
-                    .filter(java.util.Objects::nonNull)
+                    .filter(Objects::nonNull)
                     .toList();
 
             Logger.debug(() -> "[EventLoader] Total events loaded: " + loaded.size());

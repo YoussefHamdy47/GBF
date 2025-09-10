@@ -53,8 +53,7 @@ public class ShardManagerInitializer {
             configureShards(builder, config);
             ShardManager sm = builder.build();
 
-            if (config.debug())
-                Logger.success("ShardManager initialized. Total shards (gateway): " + sm.getShardsTotal());
+            Logger.debug(() -> "ShardManager initialized. Total shards (gateway): " + sm.getShardsTotal());
 
             return sm;
         } catch (Exception e) {

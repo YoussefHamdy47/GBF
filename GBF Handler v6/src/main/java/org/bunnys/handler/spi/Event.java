@@ -1,6 +1,7 @@
 package org.bunnys.handler.spi;
 
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.sharding.ShardManager;
 
 /**
