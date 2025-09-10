@@ -1,0 +1,5 @@
+{
+  "watch": ["src/main/java"],
+  "ext": "java,json,env",
+  "exec": "mvn -q exec:java -Dexec.mainClass=org.bunnys.Main"
+}

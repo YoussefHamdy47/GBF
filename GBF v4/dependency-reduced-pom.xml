@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.bunnys</groupId>
+  <artifactId>BunnyNexus</artifactId>
+  <version>4.0</version>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.5.0</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <transformers>
+                <transformer>
+                  <mainClass>org.bunnys.Main</mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  <properties>
+    <classgraph.version>4.8.177</classgraph.version>
+    <maven.compiler.source>21</maven.compiler.source>
+    <mongo.version>5.2.1</mongo.version>
+    <jda.version>5.1.2</jda.version>
+    <maven.compiler.target>21</maven.compiler.target>
+    <slf4j.version>2.0.17</slf4j.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <figlet.version>0.0.9</figlet.version>
+    <logback.version>1.5.18</logback.version>
+    <dotenv.version>3.0.0</dotenv.version>
+  </properties>
+</project>

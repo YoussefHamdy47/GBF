@@ -1,0 +1,4 @@
+logging:
+  level:
+    root: OFF
+    org.bunnys: DEBUG
