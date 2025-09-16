@@ -22,7 +22,9 @@ import org.bunnys.handler.utils.handler.logging.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.Duration;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -402,9 +404,11 @@ public final class InteractionCreate extends ListenerAdapter implements Event {
             @NotNull Throwable exception) {
 
         final boolean isTimeout = exception instanceof TimeoutException;
-        final ErrorMessage errorMsg = createErrorMessage(commandName, traceId, isTimeout);
+        // Unwrap the exception to get the root cause
+        final Throwable rootCause = unwrapCompletionException(exception);
+        final ErrorMessage errorMsg = createErrorMessage(commandName, traceId, isTimeout, rootCause);
 
-        logError(commandName, userId, traceId, exception, isTimeout);
+        logError(commandName, userId, traceId, rootCause, isTimeout);
         sendUserErrorMessage(event, errorMsg.title(), errorMsg.description());
     }
 
@@ -422,18 +426,32 @@ public final class InteractionCreate extends ListenerAdapter implements Event {
      * @param isTimeout   A flag indicating if the error was a timeout
      * @return An {@link ErrorMessage} record
      */
-    private ErrorMessage createErrorMessage(String commandName, String traceId, boolean isTimeout) {
+    private ErrorMessage createErrorMessage(String commandName, String traceId, boolean isTimeout,
+            Throwable exception) {
         if (isTimeout) {
             return new ErrorMessage(
                     Emojis.DEFAULT_ERROR + " Command Timed Out",
                     String.format("Your command `/%s` took too long and was cancelled.%n" +
                             "Please try again in a moment. (`%s`)", commandName, traceId));
         } else {
+            String baseDescription = String.format(
+                    "We ran into an issue while running `/%s`. This isn't your fault.%n" +
+                            "Please try again. If this keeps happening, share this code with support: `%s`",
+                    commandName, traceId);
+
+            // For user-facing exceptions (e.g., IllegalArgumentException,
+            // IllegalStateException), append the specific message
+            String specificError;
+            if (exception instanceof IllegalArgumentException || exception instanceof IllegalStateException)
+                specificError = "\n\n" + exception.getMessage();
+            else
+                // For other exceptions, log but don't expose details to user (security/best
+                // practice)
+                specificError = "\n\nAn unexpected error occurred. Please try again.";
+
             return new ErrorMessage(
                     Emojis.DEFAULT_ERROR + " Something went wrong",
-                    String.format("We ran into an issue while running `/%s`. This isn't your fault.%n" +
-                            "Please try again. If this keeps happening, share this code with support: `%s`",
-                            commandName, traceId));
+                    baseDescription + specificError);
         }
     }
 
@@ -447,13 +465,12 @@ public final class InteractionCreate extends ListenerAdapter implements Event {
      * @param isTimeout   A flag indicating a timeout error
      */
     private void logError(String commandName, String userId, String traceId, Throwable exception, boolean isTimeout) {
-        if (isTimeout) {
+        if (isTimeout)
             Logger.warning("[" + EVENT_NAME + "] Command '" + commandName + "' timed out after "
                     + COMMAND_TIMEOUT.toSeconds() + "s for user " + userId + " (traceId=" + traceId + ")");
-        } else {
+        else
             Logger.error("[" + EVENT_NAME + "] Command '" + commandName + "' failed for user " + userId + " (traceId="
                     + traceId + ")", exception);
-        }
     }
 
     /**
@@ -564,11 +581,20 @@ public final class InteractionCreate extends ListenerAdapter implements Event {
      */
     @NotNull
     private static Throwable unwrapCompletionException(@NotNull Throwable exception) {
-        if (exception instanceof CompletionException || exception instanceof ExecutionException) {
-            Throwable cause = exception.getCause();
-            return cause != null ? cause : exception;
+        Set<Throwable> seen = new HashSet<>();
+        Throwable current = exception;
+        int depth = 0;
+
+        while (current != null && depth < 100 && seen.add(current)) {
+            if (current instanceof ExecutionException || current instanceof RuntimeException
+                    || current instanceof CompletionException)
+                current = current.getCause();
+            else
+                break;
+
+            depth++;
         }
-        return exception;
+        return current != null ? current : exception;
     }
 
     /**

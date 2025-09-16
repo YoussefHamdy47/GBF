@@ -55,6 +55,7 @@ public final class Emojis {
     public static final String RED_HEART_SPIN = "<a:redSpin:1025851361583173773>";
     public static final String PINK_HEART_SPIN = "<a:pinkSpin:1025851222068052101>";
     public static final String DONUT_SPIN = "<a:donutSpin:1025851417421955204>";
+    public static final String PINK_CRYSTAL_HEART_SPIN = "<a:PinkCrystalHeart:1417102374572523593> ";
 
     // Immutable lookup map
     private static final Map<String, String> REGISTRY;
