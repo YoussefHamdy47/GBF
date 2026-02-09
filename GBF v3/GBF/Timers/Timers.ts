@@ -360,9 +360,10 @@ export class Timers {
       // Assuming the user only does 1 session a day, another way to do this is to get the start time for the semester but this will be added later
       const numberOfWeeks = Math.floor(timerStats.getSessionCount() / 7);
 
-      const averageTimePerWeek = Number(
-        (timerStats.getSemesterTime() / numberOfWeeks).toFixed(3)
-      );
+      const averageTimePerWeek =
+        numberOfWeeks === 0
+          ? 0
+          : Number((timerStats.getSemesterTime() / numberOfWeeks).toFixed(3));
 
       accountDetails += `• Average Session Time / 7 Sessions: ${
         averageTimePerWeek !== 0
@@ -475,10 +476,10 @@ export class Timers {
 
       if (orderedSubjects.length > 0) {
         subjectDetails += "**\nSubject Stats**\n";
-        orderedSubjects.forEach(
-          (subject) =>
-            (subjectDetails += `• ${subject.subjectName} [${subject.timesStudied}]\n`)
-        );
+
+        orderedSubjects.forEach((subject) => {
+          subjectDetails += `• ${subject.subjectCode} - ${subject.subjectName} [${subject.timesStudied}]\n`;
+        });
       } else {
         subjectDetails += "**Subject Stats**\nN/A\n";
       }
