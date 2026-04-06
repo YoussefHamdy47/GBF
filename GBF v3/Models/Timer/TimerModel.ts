@@ -16,6 +16,12 @@ const SubjectSchema = new Schema<Subject>(
     subjectCode: { type: String, default: null, unique: true, trim: true },
     timesStudied: { type: Number, default: 0, min: 0 },
     creditHours: { type: Number, default: null, min: 1 },
+    totalStudyTime: {
+      type: Number,
+      default: 0,
+      min: 0,
+      set: roundToThree,
+    },
     grade: {
       type: String,
       default: null,
@@ -25,7 +31,7 @@ const SubjectSchema = new Schema<Subject>(
   },
   {
     _id: false,
-  }
+  },
 );
 
 const SemesterSchema = new Schema<Semester>(
@@ -45,7 +51,7 @@ const SemesterSchema = new Schema<Semester>(
   },
   {
     _id: false,
-  }
+  },
 );
 
 const SessionBreakSchema = new Schema<SessionBreak>(
@@ -55,7 +61,7 @@ const SessionBreakSchema = new Schema<SessionBreak>(
   },
   {
     _id: false,
-  }
+  },
 );
 
 const SessionSchema = new Schema<Session>(
@@ -74,7 +80,7 @@ const SessionSchema = new Schema<Session>(
   },
   {
     _id: false,
-  }
+  },
 );
 
 const AccountSchema = new Schema<Account>(
@@ -85,7 +91,7 @@ const AccountSchema = new Schema<Account>(
   },
   {
     _id: false,
-  }
+  },
 );
 
 const ITimerDataSchema = new Schema<ITimerData>(
@@ -96,7 +102,7 @@ const ITimerDataSchema = new Schema<ITimerData>(
   },
   {
     collection: "Timer Data",
-  }
+  },
 );
 
 const TimerModel = model<ITimerData>("Timer Data", ITimerDataSchema);

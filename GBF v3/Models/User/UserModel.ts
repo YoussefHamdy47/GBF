@@ -49,3 +49,4 @@ const UserSchema = new Schema<GBFUser>(
 const UserModel = model<GBFUser & Document>("GBF Users", UserSchema);
 
 export { UserModel, userSchema };
+
