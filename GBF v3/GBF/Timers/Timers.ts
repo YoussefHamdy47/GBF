@@ -38,7 +38,7 @@ export class Timers {
   constructor(
     userID: Snowflake,
     client: GBF = undefined,
-    interaction: CommandInteraction = undefined
+    interaction: CommandInteraction = undefined,
   ) {
     this.userID = userID;
     this.gbfClient = client;
@@ -63,31 +63,31 @@ export class Timers {
     timerStats = false,
     timerEvents = false,
     interaction: CommandInteraction | ButtonInteraction = undefined,
-    client: GBF = undefined
+    client: GBF = undefined,
   ): Promise<Timers> {
     const instance = new Timers(
       userID,
       client ? client : undefined,
-      interaction ? (interaction as CommandInteraction) : undefined
+      interaction ? (interaction as CommandInteraction) : undefined,
     );
     await instance.setUser();
 
     if (timerStats)
       instance.timerStats = new TimerStats(
         instance.timerData,
-        instance.userData
+        instance.userData,
       );
 
     if (timerEvents) {
       if (!interaction || !client)
         throw new Error(
-          "To run timerEvents you must provide the Interaction and Client object"
+          "To run timerEvents you must provide the Interaction and Client object",
         );
       instance.timerEvents = new TimerEvents(
         instance.gbfClient,
         interaction as unknown as ButtonInteraction,
         instance.timerData,
-        instance.userData
+        instance.userData,
       );
     }
     return instance;
@@ -107,7 +107,7 @@ export class Timers {
   private checkUser() {
     if (!this.isDataLoaded)
       throw new Error(
-        `User data not loaded. Call 'create' to initialize Timers for userID: ${this.userID}`
+        `User data not loaded. Call 'create' to initialize Timers for userID: ${this.userID}`,
       );
 
     if (!this.timerData && !this.userData)
@@ -138,18 +138,18 @@ export class Timers {
       this.userData!.Subjects.some((s) => s.subjectName === subject.subjectName)
     ) {
       throw new Error(
-        `Subject '${subject.subjectName}' already exists for userID: ${this.userID} in the account subjects list`
+        `Subject '${subject.subjectName}' already exists for userID: ${this.userID} in the account subjects list`,
       );
     }
 
     // Check if the subject exists in the current semester
     if (
       this.timerData?.currentSemester?.semesterSubjects.some(
-        (s) => s.subjectName === subject.subjectName
+        (s) => s.subjectName === subject.subjectName,
       )
     ) {
       throw new Error(
-        `Subject '${subject.subjectName}' already exists for userID: ${this.userID} in the current semester`
+        `Subject '${subject.subjectName}' already exists for userID: ${this.userID} in the current semester`,
       );
     }
 
@@ -170,11 +170,11 @@ export class Timers {
     // Check if the subject already exists in the current semester
     if (
       this.timerData!.currentSemester.semesterSubjects.some(
-        (s) => s.subjectCode === subject.subjectCode
+        (s) => s.subjectCode === subject.subjectCode,
       )
     ) {
       throw new Error(
-        `Subject '${subject.subjectCode}' already in the current semester`
+        `Subject '${subject.subjectCode}' already in the current semester`,
       );
     }
 
@@ -183,7 +183,7 @@ export class Timers {
       this.userData?.Subjects.some((s) => s.subjectName === subject.subjectName)
     ) {
       throw new Error(
-        `Subject '${subject.subjectName}' already exists in the account subjects list`
+        `Subject '${subject.subjectName}' already exists in the account subjects list`,
       );
     }
 
@@ -203,12 +203,12 @@ export class Timers {
 
     const index = this.userData!.Subjects.findIndex(
       (s) =>
-        s.subjectCode.trim().toLowerCase() === subjectCode.trim().toLowerCase()
+        s.subjectCode.trim().toLowerCase() === subjectCode.trim().toLowerCase(),
     );
 
     if (index === -1) {
       throw new Error(
-        `You haven't registered '${subjectCode}' in your account.`
+        `You haven't registered '${subjectCode}' in your account.`,
       );
     }
 
@@ -228,12 +228,12 @@ export class Timers {
     this.checkSemester();
 
     const index = this.timerData.currentSemester!.semesterSubjects.findIndex(
-      (s) => s.subjectCode.toLowerCase() === subjectCode.toLowerCase()
+      (s) => s.subjectCode.toLowerCase() === subjectCode.toLowerCase(),
     );
 
     if (index === -1) {
       throw new Error(
-        `You haven't registered '${subjectCode}' for this semester`
+        `You haven't registered '${subjectCode}' for this semester`,
       );
     }
 
@@ -267,7 +267,7 @@ export class Timers {
   private async registerUser() {
     if (this.userData)
       throw new Error(
-        `An existing account already exists for user ID '${this.userID}'`
+        `An existing account already exists for user ID '${this.userID}'`,
       );
 
     this.userData = new UserModel({
@@ -294,7 +294,7 @@ export class Timers {
     if (this.timerData) {
       if (this.timerData.currentSemester.semesterName)
         throw new Error(
-          `Semester '${this.timerData.currentSemester.semesterName}' is already active, end it before you can start a new one.`
+          `Semester '${this.timerData.currentSemester.semesterName}' is already active, end it before you can start a new one.`,
         );
       else {
         // Resetting the data just in-case
@@ -344,7 +344,7 @@ export class Timers {
       timerStats.getTotalStudyTime() !== 0
         ? msToTime(timerStats.getTotalStudyTime()) +
           ` [${Number(
-            secondsToHours(timerStats.getTotalStudyTime() / 1000).split(" ")[0]
+            secondsToHours(timerStats.getTotalStudyTime() / 1000).split(" ")[0],
           ).toLocaleString("en-US")} hours]`
         : "0s"
     }\n`;
@@ -403,7 +403,7 @@ export class Timers {
 
     if (longestSemester)
       recordDetails += `• Longest Semester: ${msToTime(
-        longestSemester.semesterTime * 1000
+        longestSemester.semesterTime * 1000,
       )} [${longestSemester.semesterTime / 3600} hours] - [${
         longestSemester.semesterName
       }]\n`;
@@ -478,7 +478,13 @@ export class Timers {
         subjectDetails += "**\nSubject Stats**\n";
 
         orderedSubjects.forEach((subject) => {
-          subjectDetails += `• ${subject.subjectCode} - ${subject.subjectName} [${subject.timesStudied}]\n`;
+          // Fallback to 0 if totalStudyTime is undefined for older data
+          const totalSeconds = subject.totalStudyTime || 0;
+          const timeFormatted =
+            totalSeconds > 0 ? msToTime(totalSeconds * 1000) : "0s";
+          const hours = (totalSeconds / 3600).toFixed(2);
+
+          subjectDetails += `• ${subject.subjectCode} - ${subject.subjectName} [Instances: ${subject.timesStudied}] | Time: ${timeFormatted} (${hours} hours)\n`;
         });
       } else {
         subjectDetails += "**Subject Stats**\nN/A\n";
@@ -504,7 +510,7 @@ export class Timers {
 
     if (this.timerData.currentSemester.semesterName) {
       levelDetails += `${rankUpEmoji(
-        timerStats.getSemesterLevel()
+        timerStats.getSemesterLevel(),
       )} Semester Level: ${timerStats.getSemesterLevel()}\n`;
 
       levelDetails += `• XP to reach level ${
@@ -517,7 +523,7 @@ export class Timers {
 
       const percentageCompleteSemester = timerStats.percentageToNextLevel();
       levelDetails += `${timerStats.generateProgressBar(
-        percentageCompleteSemester
+        percentageCompleteSemester,
       )} [${percentageCompleteSemester}%]\n`;
 
       levelDetails += `• Time until level ${
@@ -525,7 +531,7 @@ export class Timers {
       }: ${msToTime(timerStats.getMsToNextLevel())}\n`;
 
       levelDetails += `${rankUpEmoji(
-        timerStats.getAccountLevel()
+        timerStats.getAccountLevel(),
       )} Account Level: ${timerStats.getAccountLevel()}\n`;
 
       levelDetails += `• RP to reach level ${
@@ -537,7 +543,7 @@ export class Timers {
       const percentageCompleteAccount = timerStats.percentageToNextRank();
 
       levelDetails += `${timerStats.generateProgressBar(
-        percentageCompleteAccount
+        percentageCompleteAccount,
       )} [${percentageCompleteAccount}%]\n`;
 
       levelDetails += `• Time until level ${
@@ -576,7 +582,7 @@ export class Timers {
 
     // Sort subjects by grade descending (higher first)
     const sortedSubjects = this.userData.Subjects.sort(
-      (a, b) => (gradeOrder[b.grade] || -1) - (gradeOrder[a.grade] || -1)
+      (a, b) => (gradeOrder[b.grade] || -1) - (gradeOrder[a.grade] || -1),
     );
 
     sortedSubjects.forEach((subject) => {
@@ -594,7 +600,7 @@ export class Timers {
     const sortedGradeSummary = Object.entries(gradeCounts)
       .sort(
         ([gradeA], [gradeB]) =>
-          (gradeOrder[gradeB] || -1) - (gradeOrder[gradeA] || -1)
+          (gradeOrder[gradeB] || -1) - (gradeOrder[gradeA] || -1),
       )
       .map(([grade, count]) => `${count} ${grade}`)
       .join(", ");
@@ -666,7 +672,7 @@ export class Timers {
     const rankUpCheck = checkRank(
       this.userData.Rank,
       this.userData.RP,
-      convertedXP
+      convertedXP,
     );
 
     if (rankUpCheck.hasRankedUp) {
@@ -674,7 +680,7 @@ export class Timers {
         CustomEvents.AccountLevelUp,
         this.timerData.account.userID,
         rankUpCheck.addedLevels,
-        rankUpCheck.remainingRP
+        rankUpCheck.remainingRP,
       );
     } else {
       this.userData.RP += convertedXP;

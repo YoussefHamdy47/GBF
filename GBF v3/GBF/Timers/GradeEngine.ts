@@ -68,6 +68,11 @@ export interface Subject {
    * This field is optional
    */
   creditHours: number;
+
+  /**
+   * The total number of minutes spent studying this subject
+   */
+  totalStudyTime?: number;
 }
 
 export function calculateGPA(subjects: Subject[]): number {

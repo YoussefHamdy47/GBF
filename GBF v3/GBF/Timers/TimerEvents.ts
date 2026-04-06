@@ -29,7 +29,7 @@ export class TimerEvents {
     client: GBF,
     interaction: ButtonInteraction,
     timerData: ITimerData & Document,
-    userData: GBFUser & Document
+    userData: GBFUser & Document,
   ) {
     this.client = client;
     this.timerData = timerData;
@@ -44,14 +44,14 @@ export class TimerEvents {
       this.client.guilds.cache
         .get(this.timerData.sessionData.guildID)
         ?.channels.cache.get(
-          this.timerData.sessionData.channelID
+          this.timerData.sessionData.channelID,
         ) as GuildTextBasedChannel
     )?.messages.fetch(this.timerData.sessionData.messageID);
   }
 
   public checkID(): boolean {
     return !Object.values(TimerButtonID).includes(
-      (this.interaction as ButtonInteraction).customId as TimerButtonID
+      (this.interaction as ButtonInteraction).customId as TimerButtonID,
     );
   }
 
@@ -64,7 +64,7 @@ export class TimerEvents {
       await this.timerData!.save();
 
       throw new Error(
-        `I couldn't find the session start message, use ${CommandIDs.timer_start} to start a new session or re-make the session start message.`
+        `I couldn't find the session start message, use ${CommandIDs.timer_start} to start a new session or re-make the session start message.`,
       );
     }
 
@@ -78,7 +78,7 @@ export class TimerEvents {
       (messageOwner && this.interaction.user.id !== messageOwner.account.userID)
     )
       throw new Error(
-        `You can't use this button, create your own using ${CommandIDs.timer_start}.`
+        `You can't use this button, create your own using ${CommandIDs.timer_start}.`,
       );
   }
 
@@ -94,7 +94,7 @@ export class TimerEvents {
       this.client.emit(
         CustomEvents.FixTimerButtons,
         this.client,
-        this.interaction
+        this.interaction,
       );
   }
 
@@ -115,7 +115,7 @@ export class TimerEvents {
         CustomEvents.FixTimerButtons,
         this.client,
         this.interaction,
-        fixerButtons
+        fixerButtons,
       );
 
       return TimerEventsReturns.TimerAlreadyRunning;
@@ -140,7 +140,7 @@ export class TimerEvents {
         this.timerData.sessionData.sessionTopic
           ?.split(" - ")[0]
           .trim()
-          .toLowerCase()
+          .toLowerCase(),
     );
 
     if (sessionTopic) {
@@ -163,8 +163,8 @@ export class TimerEvents {
             (Date.now() -
               this.timerData.sessionData.sessionBreaks.sessionBreakStart.getTime()) /
             1000
-          ).toFixed(3)
-        ) * 1000
+          ).toFixed(3),
+        ) * 1000,
       );
 
       summarizedStats += `• Active Break Time: ${
@@ -189,8 +189,8 @@ export class TimerEvents {
           (Date.now() - this.timerData.sessionData.sessionStartTime.getTime()) /
             1000 -
           breakTime
-        ).toFixed(3)
-      )
+        ).toFixed(3),
+      ),
     );
 
     summarizedStats += `• Time Elapsed: ${
@@ -201,7 +201,7 @@ export class TimerEvents {
       this.timerData.sessionData.numberOfBreaks
     }\n\n• Start Time: ${getTimestamp(
       this.timerData.sessionData.sessionStartTime,
-      "F"
+      "F",
     )}`;
 
     return summarizedStats;
@@ -223,7 +223,7 @@ export class TimerEvents {
         CustomEvents.FixTimerButtons,
         this.client,
         this.interaction,
-        disabledButtons
+        disabledButtons,
       );
 
       return TimerEventsReturns.TimerNotStarted;
@@ -234,14 +234,14 @@ export class TimerEvents {
         CustomEvents.FixTimerButtons,
         this.client,
         this.interaction,
-        fixerOptions
+        fixerOptions,
       );
 
       return TimerEventsReturns.TimerAlreadyPaused;
     }
 
     this.timerData.sessionData.sessionBreaks.sessionBreakStart = new Date(
-      Date.now()
+      Date.now(),
     );
     this.timerData.sessionData.numberOfBreaks++;
     this.timerData.currentSemester.breakCount++;
@@ -250,7 +250,7 @@ export class TimerEvents {
       CustomEvents.FixTimerButtons,
       this.client,
       this.interaction,
-      fixerOptions
+      fixerOptions,
     );
 
     await this.timerData!.save();
@@ -275,7 +275,7 @@ export class TimerEvents {
         CustomEvents.FixTimerButtons,
         this.client,
         this.interaction,
-        disabledButtons
+        disabledButtons,
       );
 
       return TimerEventsReturns.TimerNotStarted;
@@ -286,7 +286,7 @@ export class TimerEvents {
         CustomEvents.FixTimerButtons,
         this.client,
         this.interaction,
-        fixerOptions
+        fixerOptions,
       );
 
       return TimerEventsReturns.TimerNotPaused;
@@ -297,9 +297,9 @@ export class TimerEvents {
         Math.abs(
           (Date.now() -
             this.timerData.sessionData.sessionBreaks.sessionBreakStart.getTime()) /
-            1000
-        )
-      )
+            1000,
+        ),
+      ),
     );
 
     this.timerData.sessionData.sessionBreaks.sessionBreakTime += timeElapsed;
@@ -309,7 +309,7 @@ export class TimerEvents {
       CustomEvents.FixTimerButtons,
       this.client,
       this.interaction,
-      fixerOptions
+      fixerOptions,
     );
 
     await this.timerData!.save();
@@ -328,7 +328,7 @@ export class TimerEvents {
         CustomEvents.FixTimerButtons,
         this.client,
         this.interaction,
-        fixerButtons
+        fixerButtons,
       );
 
       return TimerEventsReturns.TimerNotStarted;
@@ -344,7 +344,7 @@ export class TimerEvents {
         CustomEvents.FixTimerButtons,
         this.client,
         this.interaction,
-        fixerOptions
+        fixerOptions,
       );
 
       return TimerEventsReturns.CannotStopPaused;
@@ -352,7 +352,7 @@ export class TimerEvents {
 
     let endMessage = `• Start Time: ${getTimestamp(
       this.timerData.sessionData.sessionStartTime,
-      "F"
+      "F",
     )}\n`;
 
     const breakTimeRaw = this.timerData.sessionData.sessionBreaks
@@ -371,8 +371,8 @@ export class TimerEvents {
           (Date.now() - this.timerData.sessionData.sessionStartTime.getTime()) /
             1000 -
           breakTime
-        ).toFixed(3)
-      )
+        ).toFixed(3),
+      ),
     );
 
     if (timeElapsed <= 0) timeElapsed = timeElapsed + breakTime;
@@ -380,7 +380,7 @@ export class TimerEvents {
     const totalTime = timeElapsed + breakTimeRaw / 1000;
 
     endMessage += `• Time Elapsed: ${msToTime(
-      totalTime * 1000
+      totalTime * 1000,
     )}\n• Session Time: ${msToTime(timeElapsed * 1000)}`;
 
     const averageBreakTime =
@@ -398,7 +398,7 @@ export class TimerEvents {
     const studiedSubjects =
       this.timerData.sessionData.subjectsStudied.length > 0
         ? `\n• Studied Subjects: ${this.timerData.sessionData.subjectsStudied.join(
-            ", "
+            ", ",
           )}`
         : "\n• No subjects studied this session.";
 
@@ -412,7 +412,7 @@ export class TimerEvents {
       CustomEvents.FixTimerButtons,
       this.client,
       this.interaction,
-      disabledButtons
+      disabledButtons,
     );
 
     // Updating the total break time
@@ -420,6 +420,14 @@ export class TimerEvents {
     this.timerData.currentSemester.semesterTime += timeElapsed;
     this.timerData.currentSemester.breakCount +=
       this.timerData.sessionData.numberOfBreaks;
+
+    this.timerData.sessionData.subjectsStudied.forEach((subjectCode) => {
+      const subject = this.timerData.currentSemester.semesterSubjects.find(
+        (s) => s.subjectCode === subjectCode,
+      );
+      if (subject) 
+        subject.totalStudyTime = (subject.totalStudyTime || 0) + timeElapsed;
+    });
 
     if (this.timerData.currentSemester.longestSession < timeElapsed) {
       this.timerData.currentSemester.longestSession = timeElapsed;
@@ -440,13 +448,13 @@ export class TimerEvents {
     const hasRankedUp = checkRank(
       this.userData.Rank,
       this.userData.RP,
-      xpEarned
+      xpEarned,
     );
 
     const hasLeveledUp = checkLevel(
       this.timerData.currentSemester.semesterLevel,
       this.timerData.currentSemester.semesterXP,
-      xpEarned
+      xpEarned,
     );
 
     if (hasRankedUp.hasRankedUp) {

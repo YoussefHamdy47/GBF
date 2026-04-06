@@ -1,7 +1,7 @@
 import { Emojis } from "../../Handler";
 import { ITimerData, Semester } from "../../Models/Timer/TimerTypes";
 import { GBFUser } from "../../Models/User/UserTypes";
-import { calculateGPA } from "./GradeEngine";
+import { calculateGPA, Subject } from "./GradeEngine";
 import { hoursRequired, rpRequired, xpRequired } from "./LevelEngine";
 
 export class TimerStats {
@@ -90,7 +90,7 @@ export class TimerStats {
     return this.timerData.currentSemester.semesterSubjects.length || 0;
   }
 
-  public getSubjectsInOrder(): { subjectName: string; timesStudied: number }[] {
+  public getSubjectsInOrder(): Subject[] {
     return this.timerData.currentSemester.semesterSubjects.length > 0
       ? [...this.timerData.currentSemester.semesterSubjects].sort(
           (a, b) => b.timesStudied - a.timesStudied
