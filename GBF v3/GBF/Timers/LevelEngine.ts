@@ -1,26 +1,21 @@
 import { Emojis } from "../../Handler";
+
 /**
- *
  * @param {number} level The user's level + 1
  * @returns {number} The amount of XP the user is required to reach the next level
- * @example
- * //Returns 100
- * console.log(xpRequired(1))
  */
 export function xpRequired(level: number): number {
-  return level * 400 + (level - 1) * 200 - 300;
+  // Base 100 + a 1.15 power curve for smooth season scaling
+  return Math.floor(100 + 150 * Math.pow(level, 1.15));
 }
 
 /**
- *
  * @param {number} level The user's level + 1
- * @returns {number} The amount of XP the user is required to reach the next level
- * @example
- * //Returns 300
- * console.log(xpRequired(1))
+ * @returns {number} The amount of RP the user is required to reach the next level
  */
 export function rpRequired(level: number): number {
-  return level * 800 + (level - 1) * 400 - 500;
+  // Base 300 + a steeper 1.15 power curve for lifetime account scaling
+  return Math.floor(300 + 300 * Math.pow(level, 1.15));
 }
 
 /**
@@ -65,7 +60,7 @@ interface LevelResult {
 export function checkLevel(
   currentRank: number,
   currentRP: number,
-  addedRP: number
+  addedRP: number,
 ): LevelResult {
   const MAX_RANK = 5000;
   let addedLevels = 0;
@@ -117,7 +112,7 @@ interface RankResult {
 export function checkRank(
   currentRank: number,
   currentRP: number,
-  addedRP: number
+  addedRP: number,
 ): RankResult {
   const MAX_RANK = 5000;
   let addedLevels = 0;
@@ -156,17 +151,17 @@ export function convertSeasonLevel(level: number): number {
 export function calculateTotalSeasonXP(SeasonLevel: number): number {
   let totalXP = 0;
   for (let level = 1; level <= SeasonLevel; level++) {
-    totalXP += level * 400 + (level - 1) * 200 - 300;
+    totalXP += xpRequired(level);
   }
   return totalXP;
 }
 
 export function calculateTotalAccountRP(AccountRank: number): number {
-  let totalXP = 0;
+  let totalRP = 0;
   for (let level = 1; level <= AccountRank; level++) {
-    totalXP += level * 800 + (level - 1) * 400 - 500;
+    totalRP += rpRequired(level);
   }
-  return totalXP;
+  return totalRP;
 }
 
 interface EmojiRange {
@@ -186,7 +181,7 @@ const emojiRanges: EmojiRange[] = [
 
 export function rankUpEmoji(level: number): string {
   const range = emojiRanges.find(
-    ({ min, max }) => level >= min && level <= max
+    ({ min, max }) => level >= min && level <= max,
   );
   return range ? range.emoji : Emojis.Verify;
 }
