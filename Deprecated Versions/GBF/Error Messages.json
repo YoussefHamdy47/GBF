@@ -1,8 +1,0 @@
-{
-    "np1": "API error, After sometime has passed you can try again and it should be working",
-    "db2": "Database error, If it is related to the server menu please rerun the command and it will work",
-    "perm3": "Permission error, The bot does not have the required permissions to do a certain action",
-    "perm4": "Permission error, The user does not have the required perimissions to run a certain command", 
-    "ban5": "User has been banned from using the bot",
-    "toggle6": "Command has been disabled from the server"
-}
