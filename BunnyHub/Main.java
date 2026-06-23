@@ -1,6 +1,5 @@
 package org.bunnys;
 
-import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.bunnys.handler.BunnyHub;
 
 public class Main {
@@ -12,12 +11,12 @@ public class Main {
                 .setCommandPackage("org.bunnys.commands")
                 .setButtonPackage("org.bunnys.buttons")
                 .setModalPackage("org.bunnys.modals")
-                .setLogActions(true)
+                .setLogActions(false)
                 .setAutoLogin(true)
                 .addTestServerIds("1187559385359200316")
                 .addDeveloperIds("333644367539470337")
                 .setTokenKey("TOKEN")
-                .addIntents(GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS)
+                .addIntents()
                 .build();
 
     }

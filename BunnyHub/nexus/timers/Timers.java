@@ -474,7 +474,7 @@ public class Timers {
                 .append("✦ **Career RP Earned:** `+").append(String.format("%,d RP", convertedXP)).append("`\n");
 
         cachedTimerData.getAccount()
-                .setLifetimeTime(cachedTimerData.getAccount().getLifetimeTime() + currentSemester.getSemesterTime());
+                .setLifetimeTime(cachedTimerData.getAccount().getLifetimeTime());
         org.bunnys.nexus.timers.engine.LevelEngine.RankResult rankCheck = org.bunnys.nexus.timers.engine.LevelEngine
                 .checkRank(cachedUser.getRank(), cachedUser.getRp(), convertedXP);
 
